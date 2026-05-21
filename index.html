@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tô Quốc Tùng - Digital Profile</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&family=Dancing+Script:wght@700&display=swap"
+        rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'heading': ['Montserrat', 'sans-serif'],
+                        'mono': ['Fira Code', 'monospace'],
+                        'signature': ['Dancing Script', 'cursive'],
+                    },
+                    colors: {
+                        cyber: {
+                            bg: '#050a15',
+                            card: '#0a1122',
+                            cyan: '#00e5ff',
+                            purple: '#b300ff',
+                            text: '#8a9ab0'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom CSS for Neon & Premium Effects */
+        body {
+            background-color: #050a15;
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 85% 60%, rgba(179, 0, 255, 0.05) 0%, transparent 40%);
+            color: #ffffff;
+            position: relative;
+            overflow-x: hidden;
+            padding-bottom: 100px;
+            /* Space for sticky bottom bar */
+        }
+
+        /* Abstract tech grid background */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glowing text utilities */
+        .text-glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+        }
+
+        .text-glow-white {
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Neon Borders for Cards & Buttons */
+        .neon-box {
+            position: relative;
+            background: rgba(10, 17, 34, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            z-index: 1;
+        }
+
+        .neon-box::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            padding: 1px;
+            /* border thickness */
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.5), rgba(179, 0, 255, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .neon-box:hover::before {
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.8), rgba(179, 0, 255, 0.8));
+            padding: 1.5px;
+        }
+
+        /* Specific border colors */
+        .border-cyan::before {
+            background: rgba(0, 229, 255, 0.5);
+        }
+
+        .border-purple::before {
+            background: rgba(179, 0, 255, 0.5);
+        }
+
+        /* Avatar Glow */
+        .avatar-glow {
+            position: relative;
+            border-radius: 50%;
+        }
+
+        .avatar-glow::before {
+            content: "";
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00e5ff, #b300ff);
+            z-index: -1;
+            filter: blur(8px);
+            opacity: 0.7;
+        }
+
+        .avatar-glow::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00e5ff, #b300ff);
+            z-index: -1;
+        }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(90deg, #00e5ff, #00a2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Hide scrollbar for tech stack */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Loader */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #050a15;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 229, 255, 0.2);
+            border-top-color: #00e5ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Section Dividers */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #8a9ab0;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(138, 154, 176, 0.2);
+        }
+
+        .section-divider::before {
+            margin-right: 1em;
+        }
+
+        .section-divider::after {
+            margin-left: 1em;
+        }
+
+        /* Social Icon Gradient Backgrounds */
+        .social-icon-bg {
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        }
+
+        /* Typewriter cursor blink */
+        .cursor-blink {
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Background map image for collab section */
+        .bg-world-map {
+            background-image: url('data:image/svg+xml;utf8,<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg"><circle cx="200" cy="100" r="80" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="2"/><circle cx="200" cy="100" r="60" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="2"/></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen font-sans">
+
+    <!-- Global Loader -->
+    <div id="loader">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Main Container -->
+    <main id="app-content"
+        class="max-w-[480px] mx-auto px-4 pt-10 pb-24 opacity-0 transition-opacity duration-500 ease-in-out relative">
+
+        <!-- Fake Code Decoration Background (Top Left) -->
+        <div
+            class="absolute top-10 left-[-50px] opacity-20 font-mono text-[10px] text-cyber-cyan pointer-events-none hidden md:block">
+            function build() {<br>
+            &nbsp;&nbsp;return new Experience(<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;code,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;design,<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;marketing<br>
+            &nbsp;&nbsp;);<br>
+            }
+        </div>
+
+        <!-- 1. HEADER / PROFILE -->
+        <header class="flex flex-col items-center text-center space-y-4 mb-8">
+            <!-- Avatar -->
+            <div class="avatar-glow w-28 h-28 mb-2">
+                <img id="el-avatar" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                    alt="Avatar" class="w-full h-full object-cover rounded-full border-2 border-[#050a15]">
+            </div>
+
+            <!-- Name & Titles -->
+            <div>
+                <h1 id="el-name"
+                    class="font-heading font-extrabold text-3xl tracking-wider text-white text-glow-white mb-2"></h1>
+                <h2 id="el-roles" class="text-cyber-cyan text-xs font-semibold tracking-[0.2em] mb-1"></h2>
+                <p id="el-desc" class="text-sm text-gray-400"></p>
+            </div>
+
+            <!-- Typewriter Effect -->
+            <div class="font-mono text-cyber-cyan text-sm mt-2">
+                <span id="el-typewriter-text"></span><span class="cursor-blink">_</span>
+            </div>
+        </header>
+
+        <!-- 2. MAIN CTAS -->
+        <div class="flex gap-4 mb-8">
+            <a id="btn-portfolio" href="#" target="_blank"
+                class="flex-1 neon-box border-cyan py-3 px-4 flex items-center justify-center gap-2 rounded-full hover:-translate-y-1 transition-transform">
+                <i class="fa-solid fa-briefcase text-cyber-cyan"></i>
+                <span class="text-xs font-semibold tracking-wide">XEM PORTFOLIO</span>
+            </a>
+            <a id="btn-contact" href="#" target="_blank"
+                class="flex-1 neon-box border-purple py-3 px-4 flex items-center justify-center gap-2 rounded-full hover:-translate-y-1 transition-transform">
+                <i class="fa-regular fa-paper-plane text-cyber-purple"></i>
+                <span class="text-xs font-semibold tracking-wide">LIÊN HỆ NGAY</span>
+            </a>
+        </div>
+
+        <!-- 3. VIDEO INTRO -->
+        <div class="neon-box rounded-xl overflow-hidden mb-6 group cursor-pointer aspect-video relative">
+            <!-- YouTube Iframe Fallback/Wrapper -->
+            <div id="video-container" class="w-full h-full relative z-10">
+                <!-- Data will inject iframe here, or show custom play button over thumbnail -->
+                <div class="absolute inset-0 bg-cyber-card flex items-center justify-center">
+                    <div
+                        class="w-14 h-14 rounded-full border-2 border-cyber-cyan flex items-center justify-center bg-black/50 backdrop-blur text-cyber-cyan group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,229,255,0.5)]">
+                        <i class="fa-solid fa-play text-xl ml-1"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. SOCIAL LINKS -->
+        <div class="section-divider">KẾT NỐI VỚI TÔI</div>
+        <div id="social-grid" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+            <!-- Social cards injected here via JS -->
+        </div>
+
+        <!-- 5. TECH STACK -->
+        <div class="section-divider">TECH STACK</div>
+        <div class="relative flex items-center mb-8">
+            <i class="fa-solid fa-chevron-left text-cyber-text absolute left-2 z-10 text-xs"></i>
+            <div class="neon-box w-full rounded-xl py-4 px-6 overflow-hidden">
+                <div id="tech-container" class="flex items-center justify-between overflow-x-auto no-scrollbar gap-6">
+                    <!-- Tech items injected via JS -->
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-cyber-text absolute right-2 z-10 text-xs"></i>
+        </div>
+
+        <!-- 6. COLLABORATION -->
+        <div
+            class="neon-box bg-world-map rounded-xl p-6 flex flex-col items-center text-center relative overflow-hidden mb-12">
+            <!-- Rocket Icon Glow -->
+            <div
+                class="w-16 h-16 rounded-full border border-cyber-purple flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(179,0,255,0.3)]">
+                <i class="fa-solid fa-rocket text-2xl text-cyber-purple"></i>
+            </div>
+            <h3 id="el-collab-title" class="font-heading font-bold text-lg text-cyber-cyan mb-2 tracking-wide"></h3>
+            <p id="el-collab-services" class="text-xs text-gray-300 mb-1"></p>
+            <p id="el-collab-desc" class="text-xs text-gray-500 mb-5"></p>
+
+            <a id="btn-collab" href="#"
+                class="border border-cyber-text/30 rounded-full py-2 px-6 text-xs font-semibold hover:bg-white/5 transition-colors flex items-center gap-2">
+                GỬI YÊU CẦU NGAY <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- 7. SIGNATURE -->
+        <div class="section-divider">CHỮ KÝ CÁ NHÂN</div>
+        <div class="flex flex-col items-center mt-6">
+            <h2 id="el-signature-name" class="font-signature text-5xl text-cyber-cyan mb-2 text-glow-cyan"
+                style="transform: rotate(-5deg);"></h2>
+            <p id="el-signature-sub" class="text-xs text-gray-400"></p>
+        </div>
+
+    </main>
+
+    <!-- 8. BOTTOM STICKY ACTION BAR -->
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-cyber-bg/80 backdrop-blur-md border-t border-white/5 z-50">
+        <div class="max-w-[480px] mx-auto flex gap-3">
+            <a id="btn-sticky-phone" href="tel:"
+                class="flex-1 bg-gradient-to-r from-blue-900 to-cyan-700 rounded-full flex items-center justify-center gap-3 p-3 shadow-[0_0_15px_rgba(0,229,255,0.3)] hover:brightness-110 transition">
+                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
+                    <i class="fa-solid fa-phone-volume text-white"></i>
+                </div>
+                <div class="text-left">
+                    <div id="el-sticky-phone-label" class="text-white font-bold text-sm leading-tight"></div>
+                    <div id="el-sticky-phone-number" class="text-white/70 text-[10px]"></div>
+                </div>
+            </a>
+
+            <a id="btn-sticky-zalo" href="#" target="_blank"
+                class="flex-1 bg-gradient-to-r from-green-600 to-emerald-400 rounded-full flex items-center justify-center gap-3 p-3 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:brightness-110 transition">
+                <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                    <span class="text-green-600 font-bold text-[10px]">Zalo</span>
+                </div>
+                <div class="text-left">
+                    <div id="el-sticky-zalo-label" class="text-white font-bold text-sm leading-tight"></div>
+                    <div id="el-sticky-zalo-desc" class="text-white/70 text-[10px]"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- FIREBASE & LOGIC SCRIPT -->
+    <script type="module">
+        // 1. IMPORT FIREBASE V9
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 2. FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyBopDo9ENOnLQqxJapKUP8TS1TqbkVUOc8",
+            authDomain: "bio-dev-13abd.firebaseapp.com",
+            projectId: "bio-dev-13abd",
+            storageBucket: "bio-dev-13abd.firebasestorage.app",
+            messagingSenderId: "950432798303",
+            appId: "1:950432798303:web:eeee3edb704e56a3862dea",
+            measurementId: "G-7KL75SLD4C"
+        };
+
+        // 3. INITIALIZE
+        let db;
+        let isFirebaseConnected = false;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            isFirebaseConnected = true;
+        } catch (error) {
+            console.error("Firebase init error:", error);
+            // Fallback render local data if Firebase config is invalid
+            renderFallbackData();
+        }
+
+        // 4. DOM ELEMENTS
+        const DOM = {
+            loader: document.getElementById('loader'),
+            appContent: document.getElementById('app-content'),
+            avatar: document.getElementById('el-avatar'),
+            name: document.getElementById('el-name'),
+            roles: document.getElementById('el-roles'),
+            desc: document.getElementById('el-desc'),
+            typewriter: document.getElementById('el-typewriter-text'),
+            btnPortfolio: document.getElementById('btn-portfolio'),
+            btnContact: document.getElementById('btn-contact'),
+            videoContainer: document.getElementById('video-container'),
+            socialGrid: document.getElementById('social-grid'),
+            techContainer: document.getElementById('tech-container'),
+            collabTitle: document.getElementById('el-collab-title'),
+            collabServices: document.getElementById('el-collab-services'),
+            collabDesc: document.getElementById('el-collab-desc'),
+            btnCollab: document.getElementById('btn-collab'),
+            sigName: document.getElementById('el-signature-name'),
+            sigSub: document.getElementById('el-signature-sub'),
+            stickyPhoneBtn: document.getElementById('btn-sticky-phone'),
+            stickyPhoneLabel: document.getElementById('el-sticky-phone-label'),
+            stickyPhoneNum: document.getElementById('el-sticky-phone-number'),
+            stickyZaloBtn: document.getElementById('btn-sticky-zalo'),
+            stickyZaloLabel: document.getElementById('el-sticky-zalo-label'),
+            stickyZaloDesc: document.getElementById('el-sticky-zalo-desc'),
+        };
+
+        // 5. FETCH DATA REALTIME
+        if (isFirebaseConnected) {
+            const docRef = doc(db, "public", "bio_data");
+
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    renderUI(data);
+                } else {
+                    console.log("No document found in Firestore!");
+                    renderFallbackData();
+                }
+            }, (error) => {
+                console.error("Error fetching data:", error);
+                renderFallbackData();
+            });
+        }
+
+        // 6. RENDER LOGIC
+        function renderUI(data) {
+            // Profile
+            if (data.profile) {
+                DOM.avatar.src = data.profile.avatar || DOM.avatar.src;
+                DOM.name.textContent = data.profile.name || "TÔ QUỐC TÙNG";
+                DOM.roles.textContent = data.profile.roles || "";
+                DOM.desc.textContent = data.profile.desc || "";
+
+                // Typewriter logic
+                if (data.profile.typewriter) {
+                    startTypewriter(data.profile.typewriter, DOM.typewriter);
+                }
+            }
+
+            // CTAs
+            if (data.ctas) {
+                DOM.btnPortfolio.href = data.ctas.portfolio || "#";
+                DOM.btnContact.href = data.ctas.contact || "#";
+            }
+
+            if (data.video && data.video.youtubeId) {
+                const v = data.video;
+                const params = new URLSearchParams({
+                    rel: '0',                          // Không hiện video gợi ý
+                    controls: v.hideControls ? '0' : '1',  // Ẩn/hiện thanh điều khiển
+                    loop: v.loop ? '1' : '0',          // Lặp lại
+                    mute: v.mute ? '1' : '0',          // Tắt tiếng
+                    // Loop cần playlist=videoId để hoạt động đúng
+                    ...(v.loop && { playlist: v.youtubeId }),
+                    // Autoplay chỉ bật khi đã tắt tiếng (trình duyệt chặn autoplay có tiếng)
+                    autoplay: v.mute ? '1' : '0',
+                });
+
+                DOM.videoContainer.innerHTML = `
+        <iframe class="w-full h-full absolute inset-0 z-20 rounded-xl"
+                src="https://www.youtube.com/embed/${v.youtubeId}?${params.toString()}"
+                title="YouTube video player" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+        </iframe>`;
+            }
+
+            // Socials
+            if (data.socials && Array.isArray(data.socials)) {
+                DOM.socialGrid.innerHTML = data.socials.map((social, index) => {
+                    // Mobile view specific styling logic (first 2 take half, next 3 take 1/3, or scroll)
+                    // The design shows 5 in a row on desktop, wrapping on mobile.
+                    return `
+                    <a href="${social.url}" target="_blank" class="neon-box flex flex-col items-center justify-center p-3 gap-2 hover:-translate-y-1 transition-transform group">
+                        <div class="social-icon-bg w-10 h-10 rounded-lg flex items-center justify-center mb-1">
+                            <i class="${social.icon} text-2xl" style="color: ${social.color}; text-shadow: 0 0 10px ${social.color}80;"></i>
+                        </div>
+                        <span class="text-white font-semibold text-[10px] sm:text-xs">${social.name}</span>
+                        <span class="text-gray-400 text-[9px] sm:text-[10px] truncate w-full text-center">${social.handle}</span>
+                    </a>
+                    `;
+                }).join('');
+            }
+
+            // Tech Stack
+            if (data.techStack && Array.isArray(data.techStack)) {
+                DOM.techContainer.innerHTML = data.techStack.map(tech => `
+                    <div class="flex flex-col items-center gap-2 min-w-[50px]">
+                        <i class="${tech.icon} text-3xl" style="color: ${tech.color}"></i>
+                        <span class="text-cyber-text text-[9px] font-mono">${tech.name}</span>
+                    </div>
+                `).join('');
+            }
+
+            // Collab
+            if (data.collab) {
+                DOM.collabTitle.textContent = data.collab.title || "";
+                DOM.collabServices.textContent = data.collab.services || "";
+                DOM.collabDesc.textContent = data.collab.desc || "";
+                DOM.btnCollab.href = data.collab.btnLink || "#";
+            }
+
+            // Signature
+            if (data.signature) {
+                DOM.sigName.textContent = data.signature.name || "";
+                DOM.sigSub.textContent = data.signature.subtitle || "";
+            }
+
+            // Bottom Sticky
+            if (data.bottomAction) {
+                DOM.stickyPhoneBtn.href = `tel:${data.bottomAction.phone.replace(/[^0-9]/g, '')}`;
+                DOM.stickyPhoneLabel.textContent = data.bottomAction.phoneLabel;
+                DOM.stickyPhoneNum.textContent = `Hotline: ${data.bottomAction.phone}`;
+
+                DOM.stickyZaloBtn.href = data.bottomAction.zaloUrl;
+                DOM.stickyZaloLabel.textContent = data.bottomAction.zaloLabel;
+                DOM.stickyZaloDesc.textContent = data.bottomAction.zaloDesc;
+            }
+
+            // Hide loader and show content
+            hideLoader();
+        }
+
+        // 7. UTILITIES
+
+        function hideLoader() {
+            DOM.loader.style.opacity = '0';
+            setTimeout(() => {
+                DOM.loader.style.display = 'none';
+                DOM.appContent.style.opacity = '1';
+            }, 500);
+        }
+
+        function startTypewriter(text, element) {
+            element.textContent = "";
+            let i = 0;
+            const speed = 100; // ms per character
+
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            // Add slight delay before starting
+            setTimeout(type, 1000);
+        }
+
+        // Fallback data if Firebase fails or isn't set up yet
+        function renderFallbackData() {
+            const fallbackData = {
+                profile: {
+                    avatar: "https://i.pravatar.cc/300?img=11",
+                    name: "TÔ QUỐC TÙNG",
+                    roles: "WEB DEVELOPER • UI DESIGNER • DIGITAL CREATOR",
+                    desc: "Thiết kế website – App – Marketing đa nền tảng",
+                    typewriter: "> Building Digital Experiences_"
+                },
+                ctas: { portfolio: "#", contact: "#" },
+                video: { youtubeId: "" }, // empty means fallback thumbnail shows
+                socials: [
+                    { name: "TikTok", handle: "@toquoctung", url: "#", icon: "fa-brands fa-tiktok", color: "#00f2fe" }, // TikTok doesn't have a single color, using cyan
+                    { name: "Facebook", handle: "Tô Quốc Tùng", url: "#", icon: "fa-brands fa-facebook-f", color: "#1877f2" },
+                    { name: "Zalo", handle: "Chat Zalo", url: "#", icon: "fa-solid fa-comment-dots", color: "#0068ff" },
+                    { name: "YouTube", handle: "Neo Wave", url: "#", icon: "fa-brands fa-youtube", color: "#ff0000" },
+                    { name: "Instagram", handle: "@tung.dev", url: "#", icon: "fa-brands fa-instagram", color: "#e1306c" }
+                ],
+                techStack: [
+                    { name: "HTML5", icon: "fa-brands fa-html5", color: "#e34f26" },
+                    { name: "CSS3", icon: "fa-brands fa-css3-alt", color: "#1572b6" },
+                    { name: "JavaScript", icon: "fa-brands fa-js", color: "#f7df1e" },
+                    { name: "React", icon: "fa-brands fa-react", color: "#61dafb" },
+                    { name: "WordPress", icon: "fa-brands fa-wordpress", color: "#21759b" },
+                    { name: "SEO", icon: "fa-solid fa-arrow-trend-up", color: "#00e5ff" },
+                    { name: "UI/UX", icon: "fa-solid fa-pen-nib", color: "#b300ff" }
+                ],
+                collab: {
+                    title: "HỢP TÁC DỰ ÁN",
+                    services: "Thiết kế website • Landing Page • Marketing",
+                    desc: "Giải pháp digital giúp doanh nghiệp tăng trưởng",
+                    btnLink: "#"
+                },
+                signature: { name: "Tô Quốc Tùng", subtitle: "Crafting Digital Experiences" },
+                bottomAction: {
+                    phoneLabel: "GỌI NGAY", phone: "09xx xxx xxx",
+                    zaloLabel: "ZALO TƯ VẤN", zaloDesc: "Chat nhanh với tôi", zaloUrl: "#"
+                }
+            };
+            console.warn("Using fallback data...");
+            renderUI(fallbackData);
+        }
+
+    </script>
+</body>
+
+</html>
