@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio Admin Dashboard</title>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4f46e5', bg: '#f3f4f6' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+        }
+
+        .hidden-section {
+            display: none !important;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Toast Animation */
+        .toast-enter {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        .toast-active {
+            transform: translateY(0);
+            opacity: 1;
+            transition: all 0.3s ease-out;
+        }
+    </style>
+</head>
+
+<body class="font-sans text-gray-800 antialiased h-screen overflow-hidden flex flex-col">
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- ================= 1. LOGIN VIEW ================= -->
+    <div id="login-view" class="flex-1 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-shield-halved text-2xl text-primary"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900">Admin Login</h1>
+                <p class="text-sm text-gray-500 mt-1">Quản lý nội dung trang BIO</p>
+            </div>
+            <form id="login-form" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="login-email" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                    <input type="password" id="login-pass" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition">
+                </div>
+                <button type="submit" id="login-btn"
+                    class="w-full bg-primary hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition flex justify-center items-center gap-2">
+                    <span>Đăng Nhập</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= 2. DASHBOARD VIEW ================= -->
+    <div id="dashboard-view" class="hidden-section flex-1 flex flex-col h-full overflow-hidden">
+
+        <!-- HEADER STICKY -->
+        <header
+            class="bg-white shadow-sm border-b border-gray-200 z-40 px-6 py-4 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
+                    BIO</div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-900 leading-tight">Bio Admin</h1>
+                    <p class="text-xs text-gray-500">Đang đăng nhập với: <span id="admin-email"
+                            class="font-medium text-primary"></span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="index.html" target="_blank"
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem Live
+                </a>
+                <button id="logout-btn"
+                    class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition">
+                    Đăng xuất
+                </button>
+                <button id="save-data-btn"
+                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-md shadow-indigo-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> <span>Lưu Thay Đổi</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT (SCROLLABLE) -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <!-- CARD 1: PROFILE & AVATAR -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i
+                            class="fa-solid fa-id-badge text-primary"></i> 1. Thông Tin Chung</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Avatar Upload -->
+                        <div class="col-span-1 flex flex-col items-center">
+                            <label class="block text-sm font-medium text-gray-700 mb-2 w-full">Ảnh Đại Diện
+                                (Avatar)</label>
+                            <div
+                                class="relative group w-32 h-32 rounded-full border-4 border-gray-100 shadow-lg overflow-hidden bg-gray-50 mb-3">
+                                <img id="avatar-preview" src="https://via.placeholder.com/150" alt="Avatar"
+                                    class="w-full h-full object-cover">
+                                <label for="avatar-upload"
+                                    class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center cursor-pointer transition">
+                                    <i class="fa-solid fa-camera text-white text-xl"></i>
+                                </label>
+                                <input type="file" id="avatar-upload" accept="image/*" class="hidden">
+                            </div>
+                            <input type="hidden" id="f-avatar-url">
+                            <p class="text-[10px] text-gray-400 text-center">Click vào ảnh để đổi<br>(Hỗ trợ JPG, PNG <
+                                    2MB)</p>
+                        </div>
+
+                        <!-- Info Fields -->
+                        <div class="col-span-2 space-y-4">
+                            <div><label class="text-sm font-medium text-gray-700">Họ và Tên</label><input type="text"
+                                    id="f-name"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none">
+                            </div>
+                            <div><label class="text-sm font-medium text-gray-700">Chức Danh (Phân cách bởi dấu
+                                    •)</label><input type="text" id="f-roles"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none">
+                            </div>
+                            <div><label class="text-sm font-medium text-gray-700">Mô tả ngắn</label><input type="text"
+                                    id="f-desc"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none">
+                            </div>
+                            <div><label class="text-sm font-medium text-gray-700">Chữ chạy (Typewriter)</label><input
+                                    type="text" id="f-typewriter"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none"
+                                    placeholder="> Building Digital Experiences_"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: MEDIA & CTA -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa-brands fa-youtube text-red-500"></i> 2. Media & Buttons
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                        <!-- YouTube ID + Toggles -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">YouTube Video ID (VD:
+                                    dQw4w9WgXcQ)</label>
+                                <input type="text" id="f-youtube"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none">
+                                <p class="text-[10px] text-gray-500 mt-1">Chuỗi mã nằm sau <code
+                                        class="bg-gray-100 px-1 rounded">?v=</code> trong link YouTube.</p>
+                            </div>
+
+                            <!-- Video Option Toggles -->
+                            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-3">
+                                <p class="text-xs font-semibold text-gray-500 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-gear"></i> Tuỳ chỉnh Video
+                                </p>
+
+                                <!-- Toggle: Ẩn thanh điều khiển -->
+                                <label class="flex items-center justify-between cursor-pointer gap-3">
+                                    <span class="text-sm text-gray-700">Ẩn thanh điều khiển</span>
+                                    <div class="relative">
+                                        <input type="checkbox" id="f-video-controls" class="sr-only peer">
+                                        <div
+                                            class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition-colors">
+                                        </div>
+                                        <div
+                                            class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5">
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- Toggle: Tự động phát lại (Loop) -->
+                                <label class="flex items-center justify-between cursor-pointer gap-3">
+                                    <span class="text-sm text-gray-700">Tự động phát lại (Loop)</span>
+                                    <div class="relative">
+                                        <input type="checkbox" id="f-video-loop" class="sr-only peer">
+                                        <div
+                                            class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition-colors">
+                                        </div>
+                                        <div
+                                            class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5">
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- Toggle: Tắt tiếng -->
+                                <label class="flex items-center justify-between cursor-pointer gap-3">
+                                    <span class="text-sm text-gray-700 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-volume-xmark text-gray-400 text-xs"></i>
+                                        Tắt tiếng <span class="text-[10px] text-gray-400">(Để tự chạy)</span>
+                                    </span>
+                                    <div class="relative">
+                                        <input type="checkbox" id="f-video-mute" class="sr-only peer">
+                                        <div
+                                            class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:bg-indigo-600 transition-colors">
+                                        </div>
+                                        <div
+                                            class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5">
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- CTA Buttons -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Link Nút "Xem Portfolio"</label>
+                                <input type="text" id="f-btn-portfolio"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Link Nút "Liên Hệ Ngay"</label>
+                                <input type="text" id="f-btn-contact"
+                                    class="mt-1 w-full p-2 border rounded focus:ring-1 focus:ring-primary outline-none">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- CARD 3: SOCIAL LINKS (DYNAMIC LIST) -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i
+                                class="fa-solid fa-share-nodes text-green-500"></i> 3. Mạng Xã Hội</h2>
+                        <button onclick="addSocialRow()"
+                            class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded transition"><i
+                                class="fa-solid fa-plus"></i> Thêm Mới</button>
+                    </div>
+                    <div id="socials-container" class="space-y-3">
+                        <!-- Dynamic rows will go here -->
+                    </div>
+                </div>
+
+                <!-- CARD 4: TECH STACK (DYNAMIC LIST) -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i
+                                class="fa-solid fa-layer-group text-blue-500"></i> 4. Tech Stack / Kỹ năng</h2>
+                        <button onclick="addTechRow()"
+                            class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-sm font-medium rounded transition"><i
+                                class="fa-solid fa-plus"></i> Thêm Mới</button>
+                    </div>
+                    <div id="tech-container" class="space-y-3">
+                        <!-- Dynamic rows will go here -->
+                    </div>
+                </div>
+
+                <!-- CARD 5: COLLAB & SIGNATURE -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i
+                            class="fa-solid fa-rocket text-purple-500"></i> 5. Hợp tác & Chữ ký</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3 border-r pr-6">
+                            <h3 class="font-semibold text-sm text-gray-500 border-b pb-2">Phần Hợp Tác</h3>
+                            <div><label class="text-xs font-medium text-gray-700">Tiêu đề</label><input type="text"
+                                    id="f-collab-title" class="w-full p-2 border rounded focus:ring-1 outline-none">
+                            </div>
+                            <div><label class="text-xs font-medium text-gray-700">Dịch vụ (cách nhau bởi
+                                    •)</label><input type="text" id="f-collab-services"
+                                    class="w-full p-2 border rounded focus:ring-1 outline-none"></div>
+                            <div><label class="text-xs font-medium text-gray-700">Mô tả thêm</label><input type="text"
+                                    id="f-collab-desc" class="w-full p-2 border rounded focus:ring-1 outline-none">
+                            </div>
+                            <div><label class="text-xs font-medium text-gray-700">Link Gửi Yêu Cầu</label><input
+                                    type="text" id="f-collab-link"
+                                    class="w-full p-2 border rounded focus:ring-1 outline-none"></div>
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="font-semibold text-sm text-gray-500 border-b pb-2">Chữ ký</h3>
+                            <div><label class="text-xs font-medium text-gray-700">Tên chữ ký (hiển thị font
+                                    tay)</label><input type="text" id="f-sig-name"
+                                    class="w-full p-2 border rounded focus:ring-1 outline-none"></div>
+                            <div><label class="text-xs font-medium text-gray-700">Tiêu đề phụ</label><input type="text"
+                                    id="f-sig-sub" class="w-full p-2 border rounded focus:ring-1 outline-none"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 6: BOTTOM STICKY BAR -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i
+                            class="fa-solid fa-mobile-screen-button text-teal-500"></i> 6. Thanh Liên Hệ Cố Định (Dưới
+                        cùng)</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3 p-4 bg-gray-50 rounded-lg">
+                            <h3 class="font-bold text-sm text-blue-600">Nút Hotline</h3>
+                            <div><label class="text-xs font-medium text-gray-700">Nhãn (VD: GỌI NGAY)</label><input
+                                    type="text" id="f-bot-phone-label" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-xs font-medium text-gray-700">Số điện thoại</label><input
+                                    type="text" id="f-bot-phone" class="w-full p-2 border rounded"></div>
+                        </div>
+                        <div class="space-y-3 p-4 bg-gray-50 rounded-lg">
+                            <h3 class="font-bold text-sm text-green-600">Nút Zalo</h3>
+                            <div><label class="text-xs font-medium text-gray-700">Nhãn (VD: ZALO TƯ VẤN)</label><input
+                                    type="text" id="f-bot-zalo-label" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-xs font-medium text-gray-700">Mô tả nhỏ</label><input type="text"
+                                    id="f-bot-zalo-desc" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-xs font-medium text-gray-700">Link Zalo
+                                    (https://zalo.me/...)</label><input type="text" id="f-bot-zalo-link"
+                                    class="w-full p-2 border rounded"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="h-10"></div><!-- spacer -->
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPT (FIREBASE + LOGIC) -->
+    <script type="module">
+        // 1. IMPORT FIREBASE MODULAR (v10.8.0)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+
+        // 2. CONFIG - BẠN PHẢI COPY CONFIG CỦA BẠN VÀO ĐÂY (Giống hệt ở index.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBopDo9ENOnLQqxJapKUP8TS1TqbkVUOc8",
+            authDomain: "bio-dev-13abd.firebaseapp.com",
+            projectId: "bio-dev-13abd",
+            storageBucket: "bio-dev-13abd.firebasestorage.app",
+            messagingSenderId: "950432798303",
+            appId: "1:950432798303:web:eeee3edb704e56a3862dea",
+            measurementId: "G-7KL75SLD4C"
+        };
+
+        // Khởi tạo
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+
+        // Document Reference (Luôn trỏ vào public/bio_data)
+        const docRef = doc(db, "public", "bio_data");
+
+        // UI Elements
+        const loginView = document.getElementById('login-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const saveDataBtn = document.getElementById('save-data-btn');
+        const avatarUpload = document.getElementById('avatar-upload');
+        const avatarPreview = document.getElementById('avatar-preview');
+
+        // ==================== AUTHENTICATION LOGIC ====================
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Đã đăng nhập
+                loginView.classList.add('hidden-section');
+                dashboardView.classList.remove('hidden-section');
+                document.getElementById('admin-email').textContent = user.email;
+                fetchData(); // Load data from Firestore
+            } else {
+                // Chưa đăng nhập
+                loginView.classList.remove('hidden-section');
+                dashboardView.classList.add('hidden-section');
+            }
+        });
+
+        // Login Submit
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            const btn = document.getElementById('login-btn');
+
+            btn.innerHTML = '<div class="spinner"></div>';
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                showToast("Đăng nhập thành công!", "success");
+            } catch (error) {
+                console.error(error);
+                showToast("Sai email hoặc mật khẩu!", "error");
+            } finally {
+                btn.innerHTML = '<span>Đăng Nhập</span>';
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            if (confirm("Bạn muốn đăng xuất?")) signOut(auth);
+        });
+
+
+        // ==================== FETCH & POPULATE DATA ====================
+        async function fetchData() {
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    populateForm(data);
+                } else {
+                    showToast("Chưa có dữ liệu, hãy nhập và lưu để tạo mới.", "info");
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+                showToast("Lỗi tải dữ liệu. Kiểm tra quyền Firestore Rules.", "error");
+            }
+        }
+
+        function populateForm(data) {
+            // Profile
+            document.getElementById('f-avatar-url').value = data.profile?.avatar || '';
+            avatarPreview.src = data.profile?.avatar || 'https://via.placeholder.com/150';
+            document.getElementById('f-name').value = data.profile?.name || '';
+            document.getElementById('f-roles').value = data.profile?.roles || '';
+            document.getElementById('f-desc').value = data.profile?.desc || '';
+            document.getElementById('f-typewriter').value = data.profile?.typewriter || '';
+
+            // Media & CTAs
+            document.getElementById('f-youtube').value = data.video?.youtubeId || '';
+            document.getElementById('f-video-controls').checked = data.video?.hideControls || false;
+            document.getElementById('f-video-loop').checked = data.video?.loop || false;
+            document.getElementById('f-video-mute').checked = data.video?.mute || false;
+            document.getElementById('f-btn-portfolio').value = data.ctas?.portfolio || '';
+            document.getElementById('f-btn-contact').value = data.ctas?.contact || '';
+
+            // Collab & Signature
+            document.getElementById('f-collab-title').value = data.collab?.title || '';
+            document.getElementById('f-collab-services').value = data.collab?.services || '';
+            document.getElementById('f-collab-desc').value = data.collab?.desc || '';
+            document.getElementById('f-collab-link').value = data.collab?.btnLink || '';
+            document.getElementById('f-sig-name').value = data.signature?.name || '';
+            document.getElementById('f-sig-sub').value = data.signature?.subtitle || '';
+
+            // Bottom Actions
+            document.getElementById('f-bot-phone-label').value = data.bottomAction?.phoneLabel || '';
+            document.getElementById('f-bot-phone').value = data.bottomAction?.phone || '';
+            document.getElementById('f-bot-zalo-label').value = data.bottomAction?.zaloLabel || '';
+            document.getElementById('f-bot-zalo-desc').value = data.bottomAction?.zaloDesc || '';
+            document.getElementById('f-bot-zalo-link').value = data.bottomAction?.zaloUrl || '';
+
+            // Dynamic Lists
+            renderSocials(data.socials || []);
+            renderTech(data.techStack || []);
+        }
+
+
+        // ==================== DYNAMIC LISTS MANAGEMENT ====================
+        const socialsContainer = document.getElementById('socials-container');
+        const techContainer = document.getElementById('tech-container');
+
+        // Render Socials
+        window.renderSocials = function (list) {
+            socialsContainer.innerHTML = '';
+            if (list.length === 0) list = [{ name: '', handle: '', url: '', icon: 'fa-brands fa-facebook', color: '#ffffff' }]; // Mẫu mặc định
+            list.forEach(item => window.addSocialRow(item));
+        }
+
+        window.addSocialRow = function (data = { name: '', handle: '', url: '', icon: 'fa-brands fa-tiktok', color: '#ff0050' }) {
+            const id = 'soc_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const html = `
+        <div id="${id}" class="social-row flex flex-col gap-2 bg-gray-50 p-3 rounded border border-gray-200 relative">
+            <button onclick="document.getElementById('${id}').remove()" class="absolute -right-2 -top-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center hover:bg-red-600 shadow"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Tên (Zalo, FB...)" value="${data.name}" class="i-name flex-1 p-2 border rounded text-sm outline-none focus:border-primary">
+                <input type="text" placeholder="Handle (@username)" value="${data.handle}" class="i-handle flex-1 p-2 border rounded text-sm outline-none focus:border-primary">
+                <input type="text" placeholder="Link URL" value="${data.url}" class="i-url flex-1 p-2 border rounded text-sm outline-none focus:border-primary">
+            </div>
+            <div class="flex gap-2 items-center">
+                <div class="flex-1">
+                    <input type="text" placeholder="Mã icon (fa-brands fa-facebook)" value="${data.icon}" class="i-icon w-full p-2 border rounded text-sm outline-none focus:border-primary">
+                    <p class="text-[10px] text-gray-400 mt-1">
+                        🔍 Tìm mã icon tại: 
+                        <a href="https://fontawesome.com/icons?f=brands&s=solid" target="_blank" class="text-indigo-500 hover:underline font-medium">fontawesome.com/icons</a>
+                        — chọn icon → copy class (VD: <code class="bg-gray-200 px-1 rounded">fa-brands fa-instagram</code>)
+                    </p>
+                </div>
+                <input type="color" value="${data.color}" class="i-color w-10 h-10 p-1 border rounded cursor-pointer shrink-0">
+            </div>
+        </div>`;
+            socialsContainer.insertAdjacentHTML('beforeend', html);
+        }
+
+        // Render Tech Stack
+        window.renderTech = function (list) {
+            techContainer.innerHTML = '';
+            if (list.length === 0) list = [{ name: '', icon: 'fa-brands fa-html5', color: '#e34f26' }];
+            list.forEach(item => window.addTechRow(item));
+        }
+
+        window.addTechRow = function (data = { name: '', icon: 'fa-brands fa-js', color: '#f7df1e' }) {
+            const id = 'tech_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            const html = `
+        <div id="${id}" class="tech-row flex flex-col gap-2 bg-gray-50 p-3 rounded border border-gray-200 relative">
+            <button onclick="document.getElementById('${id}').remove()" class="absolute -right-2 -top-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center hover:bg-red-600 shadow"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex gap-2 items-center">
+                <input type="text" placeholder="Tên kỹ năng (HTML5)" value="${data.name}" class="i-name flex-1 p-2 border rounded text-sm outline-none focus:border-primary">
+                <input type="color" value="${data.color}" class="i-color w-10 h-10 p-1 border rounded cursor-pointer shrink-0">
+            </div>
+            <div>
+                <input type="text" placeholder="Mã icon (fa-brands fa-html5)" value="${data.icon}" class="i-icon w-full p-2 border rounded text-sm outline-none focus:border-primary">
+                <p class="text-[10px] text-gray-400 mt-1">
+                    🔍 Tìm mã icon tại: 
+                    <a href="https://fontawesome.com/icons?f=brands&s=solid" target="_blank" class="text-indigo-500 hover:underline font-medium">fontawesome.com/icons</a>
+                    — lọc theo <strong>Brands</strong> để có logo công nghệ (VD: <code class="bg-gray-200 px-1 rounded">fa-brands fa-react</code>)
+                </p>
+            </div>
+        </div>`;
+            techContainer.insertAdjacentHTML('beforeend', html);
+        }
+
+        // Lấy dữ liệu từ DOM các list
+        function getListData(containerId, isTech = false) {
+            const container = document.getElementById(containerId);
+            const rows = container.querySelectorAll(isTech ? '.tech-row' : '.social-row');
+            let result = [];
+            rows.forEach(row => {
+                if (isTech) {
+                    result.push({
+                        name: row.querySelector('.i-name').value,
+                        icon: row.querySelector('.i-icon').value,
+                        color: row.querySelector('.i-color').value
+                    });
+                } else {
+                    result.push({
+                        name: row.querySelector('.i-name').value,
+                        handle: row.querySelector('.i-handle').value,
+                        url: row.querySelector('.i-url').value,
+                        icon: row.querySelector('.i-icon').value,
+                        color: row.querySelector('.i-color').value
+                    });
+                }
+            });
+            return result;
+        }
+
+
+        // ==================== IMAGE COMPRESSION (Canvas API) ====================
+        /**
+         * Nén ảnh bằng Canvas trước khi upload.
+         * @param {File} file        - File gốc từ input
+         * @param {number} maxSize   - Chiều dài/rộng tối đa (px), mặc định 600
+         * @param {number} quality   - Chất lượng JPEG 0–1, mặc định 0.82
+         * @returns {Promise<Blob>}  - Blob ảnh đã nén, luôn là image/jpeg
+         */
+        function compressImage(file, maxSize = 600, quality = 0.82) {
+            return new Promise((resolve, reject) => {
+                // Bước 1: Đọc file thành DataURL
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error("Không đọc được file ảnh."));
+                reader.onload = (evt) => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error("File không phải định dạng ảnh hợp lệ."));
+                    img.onload = () => {
+                        // Bước 2: Tính toán kích thước mới, giữ nguyên tỷ lệ
+                        let { width, height } = img;
+                        if (width > maxSize || height > maxSize) {
+                            if (width >= height) {
+                                height = Math.round((height / width) * maxSize);
+                                width = maxSize;
+                            } else {
+                                width = Math.round((width / height) * maxSize);
+                                height = maxSize;
+                            }
+                        }
+
+                        // Bước 3: Vẽ lên Canvas với kích thước mới
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+
+                        // Nền trắng (tránh nền đen khi convert PNG transparent → JPEG)
+                        ctx.fillStyle = '#FFFFFF';
+                        ctx.fillRect(0, 0, width, height);
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Bước 4: Xuất ra Blob JPEG với quality chỉ định
+                        canvas.toBlob(
+                            (blob) => {
+                                if (blob) resolve(blob);
+                                else reject(new Error("Canvas không thể xuất ảnh."));
+                            },
+                            'image/jpeg',
+                            quality
+                        );
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // ==================== IMAGE UPLOAD ====================
+        // ==================== IMAGE UPLOAD (Base64 → Firestore, không cần Storage) ====================
+        avatarUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showToast("Vui lòng chọn file ảnh (JPG, PNG, WEBP...)", "error");
+                return;
+            }
+
+            const tempUrl = URL.createObjectURL(file);
+            avatarPreview.src = tempUrl;
+            showToast("Đang xử lý ảnh...", "info");
+
+            try {
+                const originalKB = (file.size / 1024).toFixed(0);
+
+                // Nén ảnh → Blob JPEG nhỏ
+                const compressedBlob = await compressImage(file, 500, 0.80);
+                const compressedKB = (compressedBlob.size / 1024).toFixed(0);
+
+                // Chuyển Blob → base64 DataURL để lưu thẳng vào Firestore
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(compressedBlob);
+                });
+
+                // Lưu vào hidden input — khi bấm "Lưu Thay Đổi" sẽ đưa vào Firestore
+                document.getElementById('f-avatar-url').value = base64;
+                avatarPreview.src = base64;
+                URL.revokeObjectURL(tempUrl);
+
+                showToast(`✅ Ảnh đã xử lý! (${originalKB}KB → ${compressedKB}KB). Bấm "Lưu Thay Đổi" để áp dụng.`, "success");
+
+            } catch (error) {
+                console.error("Image error:", error);
+                showToast("Lỗi xử lý ảnh: " + error.message, "error");
+                avatarPreview.src = document.getElementById('f-avatar-url').value || 'https://via.placeholder.com/150';
+                URL.revokeObjectURL(tempUrl);
+            }
+        });
+
+
+        // ==================== SAVE TO FIRESTORE ====================
+        saveDataBtn.addEventListener('click', async () => {
+            const originalText = saveDataBtn.innerHTML;
+            saveDataBtn.innerHTML = '<div class="spinner mr-2"></div> Đang lưu...';
+            saveDataBtn.disabled = true;
+
+            // Kiểm tra user đang đăng nhập
+            const currentUser = auth.currentUser;
+            if (!currentUser) {
+                showToast("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.", "error");
+                saveDataBtn.innerHTML = originalText;
+                saveDataBtn.disabled = false;
+                return;
+            }
+
+            // Xây dựng object dữ liệu đúng y chang cấu trúc của index.html
+            const payload = {
+                profile: {
+                    avatar: document.getElementById('f-avatar-url').value || '',
+                    name: document.getElementById('f-name').value || '',
+                    roles: document.getElementById('f-roles').value || '',
+                    desc: document.getElementById('f-desc').value || '',
+                    typewriter: document.getElementById('f-typewriter').value || ''
+                },
+                ctas: {
+                    portfolio: document.getElementById('f-btn-portfolio').value || '#',
+                    contact: document.getElementById('f-btn-contact').value || '#'
+                },
+                video: {
+                    youtubeId: document.getElementById('f-youtube').value || '',
+                    hideControls: document.getElementById('f-video-controls').checked,
+                    loop: document.getElementById('f-video-loop').checked,
+                    mute: document.getElementById('f-video-mute').checked
+                },
+                socials: getListData('socials-container', false),
+                techStack: getListData('tech-container', true),
+                collab: {
+                    title: document.getElementById('f-collab-title').value || '',
+                    services: document.getElementById('f-collab-services').value || '',
+                    desc: document.getElementById('f-collab-desc').value || '',
+                    btnLink: document.getElementById('f-collab-link').value || '#'
+                },
+                signature: {
+                    name: document.getElementById('f-sig-name').value || '',
+                    subtitle: document.getElementById('f-sig-sub').value || ''
+                },
+                bottomAction: {
+                    phoneLabel: document.getElementById('f-bot-phone-label').value || '',
+                    phone: document.getElementById('f-bot-phone').value || '',
+                    zaloLabel: document.getElementById('f-bot-zalo-label').value || '',
+                    zaloDesc: document.getElementById('f-bot-zalo-desc').value || '',
+                    zaloUrl: document.getElementById('f-bot-zalo-link').value || '#'
+                },
+                // Metadata: timestamp lưu lần cuối
+                _updatedAt: new Date().toISOString(),
+                _updatedBy: currentUser.email
+            };
+
+            // Debug: kiểm tra payload trước khi gửi
+            console.log("📦 Payload sẽ lưu lên Firestore:", JSON.stringify(payload, null, 2));
+            console.log("👤 Đang lưu với tài khoản:", currentUser.email, "| UID:", currentUser.uid);
+            console.log("📍 Đường dẫn Firestore:", docRef.path);
+
+            try {
+                // Lưu vào Firestore (merge: false → ghi đè toàn bộ document)
+                await setDoc(docRef, payload);
+                console.log("✅ setDoc thành công!");
+                showToast("✅ Đã lưu thành công! index.html sẽ cập nhật ngay lập tức.", "success");
+            } catch (error) {
+                console.error("❌ Save error:", error.code, error.message);
+
+                // Phân tích lỗi cụ thể để báo đúng nguyên nhân
+                let msg = "Lỗi khi lưu: ";
+                if (error.code === 'permission-denied') {
+                    msg += "Không có quyền ghi. Cần cập nhật Firestore Rules cho phép user đã đăng nhập ghi vào public/bio_data.";
+                } else if (error.code === 'unavailable') {
+                    msg += "Mất kết nối mạng. Kiểm tra internet.";
+                } else if (error.code === 'unauthenticated') {
+                    msg += "Chưa xác thực. Vui lòng đăng nhập lại.";
+                } else {
+                    msg += error.message;
+                }
+                showToast(msg, "error");
+            } finally {
+                saveDataBtn.innerHTML = originalText;
+                saveDataBtn.disabled = false;
+            }
+        });
+
+
+        // ==================== TOAST UTILITY ====================
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const id = 'toast_' + Date.now();
+
+            let bgClass = "bg-gray-800";
+            let icon = "fa-info-circle";
+            if (type === "success") { bgClass = "bg-green-600"; icon = "fa-check-circle"; }
+            if (type === "error") { bgClass = "bg-red-600"; icon = "fa-exclamation-circle"; }
+            if (type === "info") { bgClass = "bg-blue-600"; icon = "fa-info-circle"; }
+
+            const html = `
+                <div id="${id}" class="${bgClass} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 toast-enter min-w-[300px]">
+                    <i class="fa-solid ${icon} text-lg"></i>
+                    <span class="text-sm font-medium flex-1">${message}</span>
+                    <button onclick="document.getElementById('${id}').remove()" class="text-white/70 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+
+            const el = document.getElementById(id);
+            // Kích hoạt animation hiện ra
+            setTimeout(() => el.classList.add('toast-active'), 10);
+
+            // Tự động xóa sau 4s
+            setTimeout(() => {
+                if (document.getElementById(id)) {
+                    el.classList.remove('toast-active');
+                    setTimeout(() => el.remove(), 300);
+                }
+            }, 4000);
+        }
+
+    </script>
+</body>
+
+</html>
